@@ -32,22 +32,26 @@
 #include <netinet/tcp.h>
 #endif
 #include <arpa/inet.h>
+#ifndef CLOUDABI
 #include <sys/file.h>
+#endif
 
 #include "common/ip.h"
 
 
 
 #ifdef	HAVE_UNIX_SOCKETS
+#ifndef CLOUDABI
 static int getaddrinfo_unix(const char *path,
 				 const struct addrinfo *hintsp,
 				 struct addrinfo **result);
+#endif /* !CLOUDABI */
 
 static int getnameinfo_unix(const struct sockaddr_un *sa, int salen,
 				 char *node, int nodelen,
 				 char *service, int servicelen,
 				 int flags);
-#endif
+#endif /* HAVE_UNIX_SOCKETS */
 
 
 /*
@@ -62,7 +66,7 @@ pg_getaddrinfo_all(const char *hostname, const char *servname,
 	/* not all versions of getaddrinfo() zero *result on failure */
 	*result = NULL;
 
-#ifdef HAVE_UNIX_SOCKETS
+#if defined(HAVE_UNIX_SOCKETS) && !defined(CLOUDABI)
 	if (hintp->ai_family == AF_UNIX)
 		return getaddrinfo_unix(servname, hintp, result);
 #endif
@@ -153,6 +157,7 @@ pg_getnameinfo_all(const struct sockaddr_storage *addr, int salen,
 
 #if defined(HAVE_UNIX_SOCKETS)
 
+#ifndef CLOUDABI
 /* -------
  *	getaddrinfo_unix - get unix socket info using IPv6-compatible API
  *
@@ -223,6 +228,7 @@ getaddrinfo_unix(const char *path, const struct addrinfo *hintsp,
 
 	return 0;
 }
+#endif /* !CLOUDABI */
 
 /*
  * Convert an address to a hostname.
@@ -249,7 +255,11 @@ getnameinfo_unix(const struct sockaddr_un *sa, int salen,
 
 	if (service)
 	{
+#ifdef CLOUDABI
+		ret = snprintf(service, servicelen, "%s", "<cloudabi-provided>");
+#else
 		ret = snprintf(service, servicelen, "%s", sa->sun_path);
+#endif
 		if (ret == -1 || ret > servicelen)
 			return EAI_MEMORY;
 	}

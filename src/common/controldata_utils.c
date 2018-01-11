@@ -26,6 +26,7 @@
 
 #include "catalog/pg_control.h"
 #include "common/controldata_utils.h"
+#include "port/fileops.h"
 #include "port/pg_crc32c.h"
 
 /*
@@ -91,14 +92,16 @@ get_controlfile(const char *DataDir, const char *progname, bool *crc_ok_p)
 	/* Make sure the control file is valid byte order. */
 	if (ControlFile->pg_control_version % 65536 == 0 &&
 		ControlFile->pg_control_version / 65536 != 0)
+	{
 #ifndef FRONTEND
 		elog(ERROR, _("byte ordering mismatch"));
-#else
+#elif !defined(CLOUDABI) /* TODO: find more elegant way */
 		printf(_("WARNING: possible byte ordering mismatch\n"
 				 "The byte ordering used to store the pg_control file might not match the one\n"
 				 "used by this program.  In that case the results below would be incorrect, and\n"
 				 "the PostgreSQL installation would be incompatible with this data directory.\n"));
 #endif
+	}
 
 	return ControlFile;
 }

@@ -339,7 +339,7 @@ pg_md5_encrypt(const char *passwd, const char *salt, size_t salt_len,
 	memcpy(crypt_buf, passwd, passwd_len);
 	memcpy(crypt_buf + passwd_len, salt, salt_len);
 
-	strcpy(buf, "md5");
+	strlcpy(buf, "md5", 4);
 	ret = pg_md5_hash(crypt_buf, passwd_len + salt_len, buf + 3);
 
 	free(crypt_buf);

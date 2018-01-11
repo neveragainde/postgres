@@ -31,6 +31,10 @@
 
 #include "postgres.h"
 
+#ifdef CLOUDABI
+#include <program.h>
+#endif
+
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -38,6 +42,7 @@
 #include "access/xlog.h"
 #include "access/xlog_internal.h"
 #include "access/xlogdefs.h"
+#include "port/fileops.h"
 #include "pgstat.h"
 #include "storage/fd.h"
 
@@ -302,7 +307,11 @@ writeTimeLineHistory(TimeLineID newTLI, TimeLineID parentTLI,
 	/*
 	 * Write into a temp file name.
 	 */
+#ifdef CLOUDABI
+	snprintf(tmppath, MAXPGPATH, XLOGDIR "/xlogtemp.%s", program_getpid());
+#else
 	snprintf(tmppath, MAXPGPATH, XLOGDIR "/xlogtemp.%d", (int) getpid());
+#endif
 
 	unlink(tmppath);
 
@@ -454,7 +463,11 @@ writeTimeLineHistoryFile(TimeLineID tli, char *content, int size)
 	/*
 	 * Write into a temp file name.
 	 */
+#ifdef CLOUDABI
+	snprintf(tmppath, MAXPGPATH, XLOGDIR "/xlogtemp.%s", program_getpid());
+#else
 	snprintf(tmppath, MAXPGPATH, XLOGDIR "/xlogtemp.%d", (int) getpid());
+#endif
 
 	unlink(tmppath);
 

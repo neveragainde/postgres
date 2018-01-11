@@ -91,6 +91,7 @@
 #include "catalog/storage.h"
 #include "funcapi.h"
 #include "miscadmin.h"
+#include "port/fileops.h"
 #include "pg_trace.h"
 #include "pgstat.h"
 #include "replication/origin.h"
@@ -490,7 +491,8 @@ MarkAsPreparingGuts(GlobalTransaction gxact, TransactionId xid, const char *gid,
 	gxact->locking_backend = MyBackendId;
 	gxact->valid = false;
 	gxact->inredo = false;
-	strcpy(gxact->gid, gid);
+	
+	strlcpy(gxact->gid, gid, GIDSIZE);
 
 	/*
 	 * Remember that we have this GlobalTransaction entry locked for us. If we
@@ -2352,7 +2354,7 @@ PrepareRedoAdd(char *buf, XLogRecPtr start_lsn, XLogRecPtr end_lsn)
 	gxact->valid = false;
 	gxact->ondisk = XLogRecPtrIsInvalid(start_lsn);
 	gxact->inredo = true;		/* yes, added in redo */
-	strcpy(gxact->gid, gid);
+	strlcpy(gxact->gid, gid, GIDSIZE);
 
 	/* And insert it into the active array */
 	Assert(TwoPhaseState->numPrepXacts < max_prepared_xacts);

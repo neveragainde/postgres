@@ -18,6 +18,8 @@
 #include "postgres_fe.h"
 #endif
 
+#include "port/fileops.h"
+
 #include <dirent.h>
 
 /*

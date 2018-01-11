@@ -17,6 +17,8 @@
 #include "postgres_fe.h"
 #endif
 
+#include "port/fileops.h"
+
 #include <unistd.h>
 #include <sys/stat.h>
 

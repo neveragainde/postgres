@@ -119,6 +119,8 @@
 
 #include "lib/ilist.h"
 
+#include "port/fileops.h"
+
 #include "pgstat.h"
 
 #include "replication/logical.h"

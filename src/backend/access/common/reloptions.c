@@ -882,7 +882,7 @@ transformRelOptions(Datum oldOptions, List *defList, char *namspace,
 			/* +1 leaves room for sprintf's trailing null */
 			t = (text *) palloc(len + 1);
 			SET_VARSIZE(t, len);
-			sprintf(VARDATA(t), "%s=%s", def->defname, value);
+			snprintf(VARDATA(t), len + 1, "%s=%s", def->defname, value);
 
 			astate = accumArrayResult(astate, PointerGetDatum(t),
 									  false, TEXTOID,
@@ -1287,7 +1287,8 @@ fillRelOptions(void *rdopts, Size basesize,
 							*(int *) itempos = 0;
 						else
 						{
-							strcpy((char *) rdopts + offset, string_val);
+							strlcpy((char *) rdopts + offset, string_val,
+							  GET_STRING_RELOPTION_LEN(options[i]) + 1);
 							*(int *) itempos = offset;
 							offset += strlen(string_val) + 1;
 						}

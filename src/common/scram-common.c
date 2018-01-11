@@ -232,7 +232,7 @@ scram_build_verifier(const char *salt, int saltlen, int iterations,
 	result = palloc(maxlen);
 #endif
 
-	p = result + sprintf(result, "SCRAM-SHA-256$%d:", iterations);
+	p = result + snprintf(result, maxlen, "SCRAM-SHA-256$%d:", iterations);
 
 	p += pg_b64_encode(salt, saltlen, p);
 	*(p++) = '$';

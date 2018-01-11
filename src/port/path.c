@@ -36,6 +36,7 @@
 #endif
 
 #include "pg_config_paths.h"
+#include "port/fileops.h"
 
 
 #ifndef WIN32
@@ -345,7 +346,7 @@ canonicalize_path(char *path)
 			pending_strips--;
 			/* foo/.. should become ".", not empty */
 			if (*spath == '\0')
-				strcpy(spath, ".");
+				strlcpy(spath, ".", 2);
 		}
 		else
 			break;
@@ -357,10 +358,15 @@ canonicalize_path(char *path)
 		 * We could only get here if path is now totally empty (other than a
 		 * possible drive specifier on Windows). We have to put back one or
 		 * more ".."'s that we took off.
+		 *
+		 * using strl* with strlen() is pointless, but necessary, as we
+		 * cannot use "unsafe" old functions on CloudABI, but none of the
+		 * many callers will provide an actual buffer length.
+		 *
 		 */
 		while (--pending_strips > 0)
-			strcat(path, "../");
-		strcat(path, "..");
+			strlcat(path, "../", strlen(path) + 4);
+		strlcat(path, "..", strlen(path) + 3);
 	}
 }
 
@@ -603,6 +609,10 @@ no_match:
  * Note: interpretation of relative-path arguments during postmaster startup
  * should happen before doing ChangeToDataDir(), else the user will probably
  * not like the results.
+ *
+ * In CloudABI, there are no absolute paths. getcwd() simply returns "" there,
+ * so there is no special handling here, but the returned path may not be
+ * an absolute path (unless the input was an absolute path anyway).
  */
 char *
 make_absolute_path(const char *path)
@@ -671,7 +681,7 @@ make_absolute_path(const char *path)
 			return NULL;
 #endif
 		}
-		sprintf(new, "%s/%s", buf, path);
+		snprintf(new, strlen(buf) + strlen(path) + 2, "%s/%s", buf, path);
 		free(buf);
 	}
 	else
@@ -800,13 +810,17 @@ get_man_path(const char *my_exec_path, char *ret_path)
 /*
  *	get_home_path
  *
- * On Unix, this actually returns the user's home directory.  On Windows
- * it returns the PostgreSQL-specific application data folder.
+ * On Unix, this actually returns the user's home directory.
+ * On Windows it returns the PostgreSQL-specific application data folder.
+ * On CloudABI, there are no home directories, so return an empty string.
  */
 bool
 get_home_path(char *ret_path)
 {
-#ifndef WIN32
+#ifdef CLOUDABI
+	strlcpy(ret_path, "", MAXPGPATH);
+	return true;
+#elif !defined(WIN32)
 	char		pwdbuf[BUFSIZ];
 	struct passwd pwdstr;
 	struct passwd *pwd = NULL;

@@ -58,6 +58,7 @@
 #include "storage/fd.h"
 #include "storage/shmem.h"
 #include "miscadmin.h"
+#include "port/fileops.h"
 
 
 #define SlruFileName(ctl, path, seg) \

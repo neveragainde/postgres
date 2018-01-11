@@ -41,7 +41,9 @@
 #ifndef WIN32
 #include <sys/ioctl.h>
 #endif
+#ifndef CLOUDABI
 #include <sys/param.h>
+#endif
 
 #ifndef NL_ARGMAX
 #define NL_ARGMAX 16

@@ -18,7 +18,9 @@
 #include "postgres_fe.h"
 #endif
 
+#ifndef CLOUDABI
 #include <pwd.h>
+#endif
 #include <unistd.h>
 
 #include "common/username.h"
@@ -30,7 +32,11 @@
 const char *
 get_user_name(char **errstr)
 {
-#ifndef WIN32
+#ifdef CLOUDABI
+	/* "In Project Mayhem, we have no names" */
+	*errstr = NULL;
+	return "postgres";
+#elif !defined(WIN32)
 	struct passwd *pw;
 	uid_t		user_id = geteuid();
 

@@ -14,7 +14,9 @@
 
 #include "c.h"
 
+#ifndef CLOUDABI
 #include <pwd.h>
+#endif
 
 
 /*
@@ -80,6 +82,7 @@ pqStrerror(int errnum, char *strerrbuf, size_t buflen)
 #endif
 }
 
+#ifndef CLOUDABI
 /*
  * Wrapper around getpwuid() or getpwuid_r() to mimic POSIX getpwuid_r()
  * behaviour, if that function is not available or required.
@@ -144,3 +147,6 @@ pqGethostbyname(const char *name,
 }
 
 #endif
+
+#endif /* !CLOUDABI */
+

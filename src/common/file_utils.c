@@ -20,6 +20,7 @@
 #include <unistd.h>
 
 #include "common/file_utils.h"
+#include "port/fileops.h"
 
 
 /* Define PG_FLUSH_DATA_WORKS if we have an implementation for pg_flush_data */

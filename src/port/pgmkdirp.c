@@ -31,6 +31,7 @@
  */
 
 #include "c.h"
+#include "port/fileops.h"
 
 #include <sys/stat.h>
 
@@ -100,9 +101,11 @@ pg_mkdir_p(char *path, int omode)
 	 * We change the user's umask and then restore it, instead of doing
 	 * chmod's.  Note we assume umask() can't change errno.
 	 */
+#ifndef CLOUDABI
 	oumask = umask(0);
 	numask = oumask & ~(S_IWUSR | S_IXUSR);
 	(void) umask(numask);
+#endif
 
 	if (p[0] == '/')			/* Skip leading '/'. */
 		++p;
@@ -116,8 +119,10 @@ pg_mkdir_p(char *path, int omode)
 		if (!last && p[1] == '\0')
 			last = 1;
 
+#ifndef CLOUDABI
 		if (last)
 			(void) umask(oumask);
+#endif
 
 		/* check for pre-existing directory */
 		if (stat(path, &sb) == 0)
@@ -141,8 +146,10 @@ pg_mkdir_p(char *path, int omode)
 			*p = '/';
 	}
 
+#ifndef CLOUDABI
 	/* ensure we restored umask */
 	(void) umask(oumask);
+#endif
 
 	return retval;
 }

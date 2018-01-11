@@ -22,8 +22,12 @@
 
 #include <signal.h>
 #include <sys/stat.h>
+#ifndef CLOUDABI
 #include <sys/wait.h>
+#endif
 #include <unistd.h>
+
+#include "port/fileops.h"
 
 #ifndef FRONTEND
 /* We use only 3- and 4-parameter elog calls in this file, for simplicity */
@@ -39,13 +43,17 @@
 #define getcwd(cwd,len)  GetCurrentDirectory(len, cwd)
 #endif
 
+#ifndef CLOUDABI
 static int	validate_exec(const char *path);
 static int	resolve_symlinks(char *path);
 static char *pipe_read_line(char *cmd, char *line, int maxsize);
+#endif
 
 #ifdef WIN32
 static BOOL GetTokenUser(HANDLE hToken, PTOKEN_USER *ppTokenUser);
 #endif
+
+#ifndef CLOUDABI
 
 /*
  * validate_exec -- validate "path" as an executable file
@@ -602,6 +610,8 @@ set_pglocale_pgservice(const char *argv0, const char *app)
 			putenv(dup_path);
 	}
 }
+
+#endif /* !CLOUDABI */
 
 #ifdef WIN32
 

@@ -367,8 +367,10 @@ InitializeParallelDSM(ParallelContext *pcxt)
 		lnamelen = strlen(pcxt->library_name);
 		entrypointstate = shm_toc_allocate(pcxt->toc, lnamelen +
 										   strlen(pcxt->function_name) + 2);
-		strcpy(entrypointstate, pcxt->library_name);
-		strcpy(entrypointstate + lnamelen + 1, pcxt->function_name);
+		strlcpy(entrypointstate, pcxt->library_name,
+		  lnamelen + strlen(pcxt->function_name) + 2);
+		strlcpy(entrypointstate + lnamelen + 1, pcxt->function_name,
+		  strlen(pcxt->function_name) + 1);
 		shm_toc_insert(pcxt->toc, PARALLEL_KEY_ENTRYPOINT, entrypointstate);
 	}
 
@@ -447,8 +449,8 @@ LaunchParallelWorkers(ParallelContext *pcxt)
 		| BGWORKER_CLASS_PARALLEL;
 	worker.bgw_start_time = BgWorkerStart_ConsistentState;
 	worker.bgw_restart_time = BGW_NEVER_RESTART;
-	sprintf(worker.bgw_library_name, "postgres");
-	sprintf(worker.bgw_function_name, "ParallelWorkerMain");
+	snprintf(worker.bgw_library_name, BGW_MAXLEN, "postgres");
+	snprintf(worker.bgw_function_name, BGW_MAXLEN, "ParallelWorkerMain");
 	worker.bgw_main_arg = UInt32GetDatum(dsm_segment_handle(pcxt->seg));
 	worker.bgw_notify_pid = MyProcPid;
 

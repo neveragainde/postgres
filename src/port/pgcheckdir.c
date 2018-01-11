@@ -15,6 +15,7 @@
 
 #include <dirent.h>
 
+#include "port/fileops.h"
 
 /*
  * Test to see if a directory exists and is empty or not.
