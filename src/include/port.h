@@ -15,7 +15,9 @@
 
 #include <ctype.h>
 #include <netdb.h>
+#ifndef CLOUDABI
 #include <pwd.h>
+#endif
 
 /* socket has a different definition on WIN32 */
 #ifndef WIN32
@@ -376,7 +378,7 @@ extern int	fls(int mask);
 #define ftello(a)		ftell(a)
 #endif
 
-#if !defined(HAVE_GETPEEREID) && !defined(WIN32)
+#if !defined(HAVE_GETPEEREID) && !defined(WIN32) && !defined(CLOUDABI)
 extern int	getpeereid(int sock, uid_t *uid, gid_t *gid);
 #endif
 
@@ -425,7 +427,7 @@ extern void srandom(unsigned int seed);
 /* thread.h */
 extern char *pqStrerror(int errnum, char *strerrbuf, size_t buflen);
 
-#ifndef WIN32
+#if !defined(WIN32) && !defined(CLOUDABI)
 extern int pqGetpwuid(uid_t uid, struct passwd *resultbuf, char *buffer,
 		   size_t buflen, struct passwd **result);
 #endif
@@ -440,7 +442,9 @@ extern void pg_qsort(void *base, size_t nel, size_t elsize,
 		 int (*cmp) (const void *, const void *));
 extern int	pg_qsort_strcmp(const void *a, const void *b);
 
+#ifndef CLOUDABI
 #define qsort(a,b,c,d) pg_qsort(a,b,c,d)
+#endif
 
 typedef int (*qsort_arg_comparator) (const void *a, const void *b, void *arg);
 

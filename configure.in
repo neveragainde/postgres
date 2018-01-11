@@ -70,6 +70,7 @@ dragonfly*) template=netbsd ;;
   netbsd*) template=netbsd ;;
  openbsd*) template=openbsd ;;
  solaris*) template=solaris ;;
+ cloudabi) template=cloudabi ;;
 esac
 
   if test x"$template" = x"" ; then
