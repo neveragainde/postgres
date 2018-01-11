@@ -168,7 +168,7 @@ getopt_long(int argc, char *const argv[],
 	/* short option */
 	optopt = (int) *place++;
 
-	oli = strchr(optstring, optopt);
+	oli = strchr((char *) optstring, optopt);
 	if (!oli)
 	{
 		if (!*place)
