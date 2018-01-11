@@ -1545,7 +1545,13 @@ else
   AC_CHECK_FUNCS([fpclass fp_class fp_class_d class], [break])
 fi
 
-AC_REPLACE_FUNCS([crypt fls getopt getrusage inet_aton mkdtemp random rint srandom strerror strlcat strlcpy])
+if test "$PORTNAME" = "cloudabi"; then
+  #AC_REPLACE_FUNCS([crypt fls getrusage inet_aton random rint srandom strerror strlcat strlcpy])
+  # don't replace anything?!
+  :
+else
+  AC_REPLACE_FUNCS([crypt fls getopt getrusage inet_aton mkdtemp random rint srandom strerror strlcat strlcpy])
+fi
 
 case $host_os in
 
@@ -1557,6 +1563,9 @@ case $host_os in
                 AC_DEFINE(HAVE_GETPEEREID, 1, [Define to 1 because function not required.])
                 ac_cv_func_unsetenv=yes
                 ac_cv_func_getpeereid=yes;;
+	cloudabi)
+		# CloudABI does neither have nor need those
+		;;
         *)
                 AC_REPLACE_FUNCS([unsetenv getpeereid])
 		;;
@@ -1573,10 +1582,12 @@ else
 fi
 
 # Similarly, use system's getopt_long() only if system provides struct option.
-if test x"$ac_cv_type_struct_option" = xyes ; then
-  AC_REPLACE_FUNCS([getopt_long])
-else
-  AC_LIBOBJ(getopt_long)
+if test "$PORTNAME" != "cloudabi"; then
+  if test x"$ac_cv_type_struct_option" = xyes ; then
+    AC_REPLACE_FUNCS([getopt_long])
+  else
+    AC_LIBOBJ(getopt_long)
+  fi
 fi
 
 # Solaris' getopt() doesn't do what we want for long options, so always use
@@ -1764,9 +1775,10 @@ AC_DEFINE_UNQUOTED(INT64_MODIFIER, $INT64_MODIFIER,
                    [Define to the appropriate snprintf length modifier for 64-bit ints.])
 
 # Also force use of our snprintf if the system's doesn't support the %z flag.
+# We ignore the case of 'cross' here in good faith.
 if test "$pgac_need_repl_snprintf" = no; then
   PGAC_FUNC_SNPRINTF_SIZE_T_SUPPORT
-  if test "$pgac_cv_snprintf_size_t_support" != yes; then
+  if test "$pgac_cv_snprintf_size_t_support" = no; then
     pgac_need_repl_snprintf=yes
   fi
 fi

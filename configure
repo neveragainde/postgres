@@ -13403,7 +13403,12 @@ done
 
 fi
 
-ac_fn_c_check_func "$LINENO" "crypt" "ac_cv_func_crypt"
+if test "$PORTNAME" = "cloudabi"; then
+  #AC_REPLACE_FUNCS([crypt fls getrusage inet_aton random rint srandom strerror strlcat strlcpy])
+  # don't replace anything?!
+  :
+else
+  ac_fn_c_check_func "$LINENO" "crypt" "ac_cv_func_crypt"
 if test "x$ac_cv_func_crypt" = xyes; then :
   $as_echo "#define HAVE_CRYPT 1" >>confdefs.h
 
@@ -13560,6 +13565,7 @@ esac
 fi
 
 
+fi
 
 case $host_os in
 
@@ -13575,6 +13581,9 @@ $as_echo "#define HAVE_GETPEEREID 1" >>confdefs.h
 
                 ac_cv_func_unsetenv=yes
                 ac_cv_func_getpeereid=yes;;
+	cloudabi)
+		# CloudABI does neither have nor need those
+		;;
         *)
                 ac_fn_c_check_func "$LINENO" "unsetenv" "ac_cv_func_unsetenv"
 if test "x$ac_cv_func_unsetenv" = xyes; then :
@@ -13635,8 +13644,9 @@ esac
 fi
 
 # Similarly, use system's getopt_long() only if system provides struct option.
-if test x"$ac_cv_type_struct_option" = xyes ; then
-  ac_fn_c_check_func "$LINENO" "getopt_long" "ac_cv_func_getopt_long"
+if test "$PORTNAME" != "cloudabi"; then
+  if test x"$ac_cv_type_struct_option" = xyes ; then
+    ac_fn_c_check_func "$LINENO" "getopt_long" "ac_cv_func_getopt_long"
 if test "x$ac_cv_func_getopt_long" = xyes; then :
   $as_echo "#define HAVE_GETOPT_LONG 1" >>confdefs.h
 
@@ -13650,13 +13660,14 @@ esac
 fi
 
 
-else
-  case " $LIBOBJS " in
+  else
+    case " $LIBOBJS " in
   *" getopt_long.$ac_objext "* ) ;;
   *) LIBOBJS="$LIBOBJS getopt_long.$ac_objext"
  ;;
 esac
 
+  fi
 fi
 
 # Solaris' getopt() doesn't do what we want for long options, so always use
@@ -14345,6 +14356,7 @@ _ACEOF
 
 
 # Also force use of our snprintf if the system's doesn't support the %z flag.
+# We ignore the case of 'cross' here in good faith.
 if test "$pgac_need_repl_snprintf" = no; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether snprintf supports the %z modifier" >&5
 $as_echo_n "checking whether snprintf supports the %z modifier... " >&6; }
@@ -14392,7 +14404,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $pgac_cv_snprintf_size_t_support" >&5
 $as_echo "$pgac_cv_snprintf_size_t_support" >&6; }
 
-  if test "$pgac_cv_snprintf_size_t_support" != yes; then
+  if test "$pgac_cv_snprintf_size_t_support" = no; then
     pgac_need_repl_snprintf=yes
   fi
 fi
