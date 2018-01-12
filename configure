@@ -6150,10 +6150,10 @@ fi
 # readline on MinGW has problems with backslashes in psql and other bugs.
 # This is particularly a problem with non-US code pages.
 # Therefore disable its use until we understand the cause. 2004-07-20
-if test "$PORTNAME" = "win32"; then
+if test "$PORTNAME" = "win32" -o "$PORTNAME" = "cloudabi"; then
   if test "$with_readline" = yes; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: *** Readline does not work on MinGW --- disabling" >&5
-$as_echo "$as_me: WARNING: *** Readline does not work on MinGW --- disabling" >&2;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: *** Readline does not work on this platform -- disabling" >&5
+$as_echo "$as_me: WARNING: *** Readline does not work on this platform -- disabling" >&2;}
     with_readline=no
   fi
 fi
@@ -15540,6 +15540,9 @@ if test "$enable_strong_random" = "yes" && test x"$USE_OPENSSL_RANDOM" = x"" && 
     USE_OPENSSL_RANDOM=1
   elif test "$PORTNAME" = "win32" ; then
     USE_WIN32_RANDOM=1
+  elif test "$PORTNAME" = "cloudabi" ; then
+    # dummy // TODO: add cloudabi randomness as a proper option here
+    USE_DEV_URANDOM=1
   else
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for /dev/urandom" >&5
 $as_echo_n "checking for /dev/urandom... " >&6; }
