@@ -1,0 +1,68 @@
+Random porting notes
+====================
+
+- Focus: Porting the backend, possibly with reduced functionality in the
+  first step. Porting of tools like initdb, psql, ... either does not apply
+  to CloudABI at all, or in some cases is an objective for later, when the
+  PoC for the backend has worked out.
+
+- Setup
+    - Need:
+      - cloudabi-utils
+      - cloudabi-toolchain
+      - kernel-support (FreeBSD: kldload cloudabi64)
+      - runtime environment from the CloudABI Repository 
+        (FreeBSD: Package x86_64-unknown-cloudabi-cxx-runtime)
+      - Detailed instructions for each supported OS at https://nuxi.nl/
+
+    - Configure: ./configure --host=x86_64-unknown-cloudabi
+
+    - Make only the Backend: make -C src/backend (FreeBSD: use gmake)
+
+- The current state of the Port is based on Pg 10.1 instead of 11devel, so
+  we won't have to deal with any instabilities that were not introduced by
+  us. Once this PoC works, we can worry about patching against HEAD.
+
+- Unsupported stuff
+    - Objects: Several bits are removed from the Build via configure.in
+      or the subdirectories' Makefiles, because they do not make any sense
+      on CloudABI (e.g. getopt)
+    - Types: src/include/port/cloudabi.h defines sig_atomic_t and pid_t --
+      the former might be ok (can be assumed to *always* be int), but the
+      latter should probably be cleaned up do improve visibility of areas
+      that need fixing. It's just here to ease the initial burden.
+
+- Random
+    - Test disabled in configure.in.
+    - Best would be to --with-openssl, which makes configure use OpenSSL's
+      random (requires CloudABI's port of LibreSSL to be installed)
+    - Dummy for now, will probably #ifdef in appropriate code
+    - Would be nice to have this cleanly as a "random method" in the sense
+      of configure.in's options
+
+- Ugly corners are marked as // TODO ...
+
+- CloudABI has no support for any global objects / namespaces, hence there
+  is no standard POSIX access to a global filesystem namespace, i.e. there
+  are no absolute paths whatsoever. The files src/include/port/fileops.h and
+  src/port/fileops.c provide an abstraction layer that maps certain known
+  (compiled-in) paths to the file descriptiors that were passed from the
+  CloudABI environment. Those functions are macro'ed over the existing
+  calls to open() etc., so usually it's enough to #include "port/fileops.h".
+
+  This layer is not complete yet: Some functions may still be missing, and
+  more importantly, while the code does compile, it has never been tested
+  and will need further work before it does something useful.
+
+- The major challenge is revamping several kinds of IPC: Shared memory
+  usage, forking of backends / workers, signalling between processes etc.
+
+- CloudABI's libc also removes "unsafe" string functions like strcpy()
+  and sprintf() -- in some cases the fix might look weird
+
+- CloudABI does not need any concepts of usernames, groups, permissions,
+  hence everything related to the user database has to go (pwd.h and friends)
+
+- Current mode of operation: While gmake throws compiler errors, fix each
+  file as we go.
+
